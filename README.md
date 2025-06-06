@@ -1,7 +1,10 @@
 # I2C Camera Hardware Emulator Project
 
 ## Overview
-This project emulates an I2C camera system using an Arduino Uno R4 WiFi (Emulator) and an Jetson AGX Orin Dev Kit (Controller). The system mimics a camera's behavior by sending and receiving data over I2C, and control bytes transmission over a custom 3 GPIO pin custom protocol, with the Arduino functioning as a slave device and the Jetson AGX Orin as the master. It includes an I2C control register, interrupt register, and a user input based error simulation.
+This project emulates an I2C camera system using an **Arduino Uno R4 WiFi (Emulator)** and an **Jetson AGX Orin Dev Kit (Controller)**. The system mimics a camera's behavior by sending and receiving data over I2C, and control bytes transmission over a custom 3 GPIO pin custom protocol, with the Arduino functioning as a slave device and the Jetson AGX Orin as the master. It includes an I2C control register, interrupt register, and a user input based error simulation.
+
+## System Setup Overview
+![system-overview](https://github.com/user-attachments/assets/e03c9de9-d741-43dd-8843-c7a7d7f2d299)
 
 ## Features
 - **I2C Communication:** Implements a I2C protocol for data exchange between an Arduino Uno R4 WiFi (slave) and a Jetson (master).
@@ -10,7 +13,6 @@ This project emulates an I2C camera system using an Arduino Uno R4 WiFi (Emulato
   - **Interrupt Register (IR)**
 - **GPIO Signaling:** Manages GPIO signals for acknowledgment and communication control between the Arduino and Jetson.
 - **Error Simulation:** Allows the user to pick and simulate various I2C communication errors via UART input.
-- **Interrupts:** Handles errors like **Overheat Warning**, **Battery Full Warning**, **Memory Full Warning**.
 
 ## Hardware Setup
 - **Arduino Uno R4 WiFi** (Emulator)
@@ -18,13 +20,13 @@ This project emulates an I2C camera system using an Arduino Uno R4 WiFi (Emulato
 - **Bi-directional Logic Level Shifter** (To step down 5V to 3.3V)
 - **GPIO Pins:**
   - **Arduino**:
-    - GPIO 2 (input trigger)
+    - GPIO 2 (Input Trigger)
     - GPIO 4, 5, 6 (GCP-3 Pins)
-    - GPIO 7 (ACK output pin)
+    - GPIO 7 (Slave ACK Pin)
   - **Jetson**:
-    - GPIO 
-    - GPIO (control signals)
-    - GPIO (trigger output)
+    - GPIO 29 (Input Trigger)
+    - GPIO 33, 35, 37 (GCP-3 Pins)
+    - GPIO 31 (Slave ACK Pin)
 
 ## Software Setup
 
@@ -35,6 +37,7 @@ The Arduino sketch implements the I2C slave communication, handling the control 
 The Jetson script handles the I2C master communication, controlling the communication configuration and sending commands to the Arduino slave.
 
 ## Error Configuration:
+These errors are configured by the user through UART input on the Arduino, which sets the corresponding bits in the Interrupt Register (IR) to high.
   - ALWAYS_NACK: Causes the slave to always return a NACK (No Acknowledge) in communication.
   - DELAYS: Introduces intentional delays between data transactions.
   - EXTRA_BYTE: Inserts an extra byte into the communication stream.
@@ -43,14 +46,14 @@ The Jetson script handles the I2C master communication, controlling the communic
 
 | UART Input  | Error Type            |
 |------|------------------------------|
+| A | NO_ERROR  |
 | 0 | ALWAYS_NACK |
 | 1 | DELAYS |
 | 2 | EXTRA_BYTE |
 | 3 | MISSING_BYTE  |
 | 4 | BIT_FLIPS |
-| A | NO_ERROR  |
 
-## Register Formats
+## Custom Registers
 
 ### Register Map Overview
 
@@ -75,7 +78,7 @@ The **Control Register (CR)** is used to control various aspects of communicatio
 | Bit 7 | EN_COM (Enable Communication) |
   
 ### Interrupt Register (IR)
-The **Interrupt Register (IR)** holds flags for simulated communication errors and interrupt handling. The error simulation bits are set by the user through UART input and the interrupts are triggered randomly through GPIO hardware interrupt.
+The **Interrupt Register (IR)** holds flags for simulated communication errors. The error simulation bits are set by the user through UART input and the interrupts are triggered randomly through GPIO hardware interrupt.
 
 | Bit  | Description                              |
 |------|------------------------------------------|
@@ -84,12 +87,12 @@ The **Interrupt Register (IR)** holds flags for simulated communication errors a
 | Bit 2 | EXTRA_BYTE (Insert Extra Byte)           |
 | Bit 3 | MISSING_BYTE (Omit a Byte)               |
 | Bit 4 | BIT_FLIPS (Random Bit Flips)             |
-| Bit 5 | MEMORY_FULL (Memory Full Warning)        |
-| Bit 6 | BATTERY_FULL (Battery Full Warning)      |
-| Bit 7 | OVERHEAT (Overheat Warning)              |
+| Bit 5 | RESERVED        |
+| Bit 6 | RESERVED      |
+| Bit 7 | RESERVED              |
 
 ## GPIO 3-Bit Command Protocol (GCP-3)
-- Implemented a custom 3-bit protocol using GPIO pins to transmit control commands.
+Implemented a custom 3-bit protocol using GPIO pins to transmit control commands from Jetson to Arduino.
 
 | Bits  | Command Name | Description                       |
 |-------|--------------|-----------------------------------|
@@ -101,12 +104,12 @@ The **Interrupt Register (IR)** holds flags for simulated communication errors a
 | 110   | WRITE_RQ     | Jetson requests write             |
 | 111   | EN_COM       | Jetson enables communication      |
 
-## Files
-
-- `arduino_camera_emulator.ino`: Arduino sketch for I2C slave communication and error simulation.
-- `camera_emulator_gui.py`: Python script for Jetson.
+## Operations Supported
+- String Transmission with Simulated Errors
+- Black & White Image Transmission with data integrity validation using sha-256 and md5 checksum methods
+- Color Image Transmission with data integrity validation using sha-256 and md5 checksum methods
 
 ## Contributing Teammates
 - Shashank Padavalkar
-- E Sujaya
-- Royston Vedamuthu
+- [E Sujaya](https://github.com/Sujaya-E)
+- [Royston Vedamuthu](https://github.com/RoystonV)
