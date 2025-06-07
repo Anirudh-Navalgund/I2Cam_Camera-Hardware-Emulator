@@ -110,6 +110,6 @@ Implemented a custom 3-bit protocol using GPIO pins to transmit control commands
 - Color Image Transmission with data integrity validation using sha-256 and md5 checksum methods
 
 ## Contributing Teammates
-- Shashank Padavalkar
+- [Shashank Padavalkar](https://github.com/Shashank-Padavalkar)
 - [E Sujaya](https://github.com/Sujaya-E)
 - [Royston Vedamuthu](https://github.com/RoystonV)
